@@ -1,2 +1,0 @@
-# TerminalPortfolio
-Terminal inspired portfolio
