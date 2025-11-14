@@ -1,1 +1,4 @@
-Terminal inspired portfolio
+**Kanika - Personal Portfolio**
+
+Website Url: https://kanikaraheja.github.io/TerminalPortfolio/
+
