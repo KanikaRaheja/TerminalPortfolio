@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanika Raheja - Interactive Terminal Resume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Fira Code', monospace;
+            background: #000000;
+            color: #00ff00;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .terminal {
+            background: #000000;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.4), inset 0 0 100px rgba(0, 255, 0, 0.05);
+            max-width: 1200px;
+            margin: 20px auto;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .terminal-header {
+            background: #1a1a1a;
+            border-bottom: 2px solid #00ff00;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .terminal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .terminal-button {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-close { background: #ff5f56; }
+        .btn-minimize { background: #ffbd2e; }
+        .btn-maximize { background: #27c93f; }
+        
+        .terminal-title {
+            color: #00ff00;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .terminal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .terminal-output::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+        
+        .input-line {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            background: #0a0a0a;
+            padding: 10px;
+            border-top: 1px solid #00ff00;
+        }
+        
+        .prompt {
+            color: #00ff00;
+            font-weight: 600;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+        
+        .command {
+            color: #00ffff;
+        }
+        
+        .output {
+            color: #00ff00;
+            margin: 10px 0;
+        }
+        
+        .section-title {
+            color: #ffff00;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 15px 0 10px 0;
+            text-transform: uppercase;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+        
+        .highlight {
+            color: #00ffff;
+            font-weight: 600;
+        }
+        
+        .date {
+            color: #ff00ff;
+        }
+        
+        .company {
+            color: #ffff00;
+            font-weight: 600;
+        }
+        
+        .link {
+            color: #00ffff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        .link:hover {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+        }
+        
+        .skill-box {
+            display: inline-block;
+            padding: 4px 10px;
+            margin: 4px 4px 4px 0;
+            border: 1px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .skill-box:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .achievement {
+            color: #00ff00;
+            margin-left: 20px;
+            position: relative;
+            margin-top: 5px;
+        }
+        
+        .achievement::before {
+            content: "▸";
+            position: absolute;
+            left: -15px;
+            color: #00ffff;
+        }
+        
+        .ascii-border {
+            color: #00ff00;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        input {
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            outline: none;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            flex: 1;
+            caret-color: #00ff00;
+        }
+        
+        input::placeholder {
+            color: #006600;
+        }
+        
+        .error {
+            color: #ff0000;
+        }
+        
+        .success {
+            color: #00ff00;
+        }
+        
+        .info {
+            color: #00ffff;
+        }
+        
+        .warning {
+            color: #ffff00;
+        }
+        
+        .line {
+            margin: 5px 0;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @media (max-width: 768px) {
+            .terminal {
+                margin: 10px;
+                height: calc(100vh - 20px);
+                border-width: 1px;
+            }
+            
+            .terminal-body {
+                padding: 10px;
+                font-size: 12px;
+            }
+            
+            .section-title {
+                font-size: 14px;
+            }
+            
+            .skill-box {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <!-- Terminal Header -->
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <div class="terminal-button btn-close"></div>
+                <div class="terminal-button btn-minimize"></div>
+                <div class="terminal-button btn-maximize"></div>
+            </div>
+            <div class="terminal-title">kanika@resume:~</div>
+            <div style="width: 66px;"></div>
+        </div>
+        
+        <!-- Terminal Body -->
+        <div class="terminal-body">
+            <div class="terminal-output" id="output">
+                <!-- Initial welcome message will be added here -->
+            </div>
+            
+            <div class="input-line">
+                <span class="prompt">root@resume:~#</span>
+                <input type="text" id="command-input" autofocus placeholder="Type 'help' to see available commands">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        const commandInput = document.getElementById('command-input');
+        const commandHistory = [];
+        let historyIndex = -1;
+
+        // Type text with animation
+        async function typeText(text, elementId, speed = 20) {
+            const element = document.getElementById(elementId);
+            let i = 0;
+            return new Promise((resolve) => {
+                const interval = setInterval(() => {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
+
+        // Initialize with welcome message
+        const commands = {
+            help: () => {
+                return `
+<div class="line info">Available Commands:</div>
+<div class="line">  <span class="command">help</span>           - Show this help message</div>
+<div class="line">  <span class="command">about</span>          - Display information about Kanika</div>
+<div class="line">  <span class="command">contact</span>        - Show contact information</div>
+<div class="line">  <span class="command">education</span>      - Display education details</div>
+<div class="line">  <span class="command">experience</span>     - Show work experience</div>
+<div class="line">  <span class="command">projects</span>       - List projects</div>
+<div class="line">  <span class="command">awards</span>         - Display awards and honours</div>
+<div class="line">  <span class="command">skills</span>         - Show technical skills</div>
+<div class="line">  <span class="command">all</span>            - Display complete resume</div>
+<div class="line">  <span class="command">clear</span>          - Clear the terminal</div>
+<div class="line">  <span class="command">download</span>       - Download resume as text</div>
+<div class="line"></div>
+<div class="line info">Unix-style commands (cat/ls work for all sections):</div>
+<div class="line">  <span class="command">cat about.txt</span>       - View about information</div>
+<div class="line">  <span class="command">cat contact.txt</span>     - View contact details</div>
+<div class="line">  <span class="command">cat education.log</span>   - View education</div>
+<div class="line">  <span class="command">cat experience.log</span>  - View experience</div>
+<div class="line">  <span class="command">cat projects.txt</span>    - View projects</div>
+<div class="line">  <span class="command">cat awards.txt</span>      - View awards</div>
+<div class="line">  <span class="command">cat skills.txt</span>      - View skills</div>
+<div class="line">  <span class="command">ls projects/</span>        - List projects</div>
+<div class="line">  <span class="command">ls education/</span>       - List education</div>
+<div class="line">  <span class="command">ls experience/</span>      - List experience</div>
+`;
+            },
+            
+            about: () => {
+                return `
+<div class="section-title">ABOUT ME</div>
+<div class="output">
+    <div class="line">Hi! I'm <span class="highlight">Kanika Raheja</span>, a passionate Software Engineer at Cisco.</div>
+    <div class="line"></div>
+    <div class="line">I specialize in building scalable distributed systems and full-stack applications.</div>
+    <div class="line">With expertise in microservices architecture, I enhance system reliability and</div>
+    <div class="line">performance at scale, working with 1000+ distributed microservice instances.</div>
+    <div class="line"></div>
+    <div class="line">My journey includes winning multiple hackathons, developing AI-powered solutions,</div>
+    <div class="line">and contributing to high-availability systems. I'm driven by the challenge of</div>
+    <div class="line">solving complex problems and creating impactful technology.</div>
+</div>
+`;
+            },
+            
+            contact: () => {
+                return `
+<div class="section-title">CONTACT INFORMATION</div>
+<div class="output">
+    <div class="line">📧 Email: <a href="mailto:raheja160kanika@gmail.com" class="link">raheja160kanika@gmail.com</a></div>
+    <div class="line">📱 Phone: <span class="highlight">+91 9315143634</span></div>
+    <div class="line">💼 LinkedIn: <a href="https://linkedin.com/in/KanikaRaheja" target="_blank" class="link">linkedin.com/in/KanikaRaheja</a></div>
+    <div class="line">🔗 GitHub: <a href="https://github.com/KanikaRaheja" target="_blank" class="link">github.com/KanikaRaheja</a></div>
+</div>
+`;
+            },
+            
+            education: () => {
+                return `
+<div class="section-title">EDUCATION</div>
+<div class="output">
+    <div class="line"></div>
+    <div class="line"><span class="highlight">Master of Computer Applications (MCA)</span></div>
+    <div class="line"><span class="company">Indira Gandhi Delhi Technical University for Women (IGDTUW)</span></div>
+    <div class="line"><span class="date">2022 - 2024</span> | GPA: <span class="highlight">8.2/10.0</span></div>
+    <div class="line"></div>
+    <div class="line"><span class="highlight">Bachelor of Science in Computer Science (Honours)</span></div>
+    <div class="line"><span class="company">University of Delhi</span></div>
+    <div class="line"><span class="date">2019 - 2022</span> | GPA: <span class="highlight">8.9/10.0</span></div>
+</div>
+`;
+            },
+            
+            experience: () => {
+                return `
+<div class="section-title">PROFESSIONAL EXPERIENCE</div>
+<div class="output">
+    <div class="line"></div>
+    <div class="line"><span class="highlight">SOFTWARE ENGINEER</span> | <span class="company">Cisco</span></div>
+    <div class="line"><span class="date">Aug 2024 - Present</span> | Bengaluru, Karnataka</div>
+    <div class="achievement"><strong>Resilience:</strong> Enhanced system health monitoring and API reliability across 1000+ distributed microservice instances, boosting automated test coverage by 40% and accelerating root cause analysis.</div>
+    <div class="achievement"><strong>Scalability:</strong> Designed and implemented scalable standalone tool in GoLang to simulate large number of optical devices, improving testing efficiency by 60%. Enabled onboarding 200+ nodes and installing 2000+ circuits in single run.</div>
+    <div class="achievement"><strong>High Availability:</strong> Improved critical high-availability challenges at scale for geolocation feature, resolving edge cases to enhance system resilience and service stability.</div>
+    <div class="line"></div>
+    <div class="line"><span class="highlight">SOFTWARE ENGINEER INTERN</span> | <span class="company">Cisco</span></div>
+    <div class="line"><span class="date">Jan 2024 - Aug 2024</span> | Bengaluru, Karnataka</div>
+    <div class="achievement"><strong>Infrastructure:</strong> Designed and delivered interactive analytics dashboards providing actionable insights, significantly improving operational efficiency and expertise in data analysis and visualization.</div>
+    <div class="achievement"><strong>Tooling:</strong> Engineered internal management tool to optimize team operations by integrating REST APIs for real-time retrieval and processing of customer data from Cisco's internal databases.</div>
+</div>
+`;
+            },
+            
+            projects: () => {
+                return `
+<div class="section-title">PROJECTS</div>
+<div class="output">
+    <div class="line"></div>
+    <div class="line"><span class="highlight">GemInbox</span> - AI-Powered Email Assistant</div>
+    <div class="achievement">Built full-stack AI-powered email assistant integrating Java-based REST API with Chrome Extension to fetch and display context-aware responses generated by Google Gemini.</div>
+    <div class="achievement">Enabled intelligent email reply generation by auto-parsing thread context, with real-time frontend-backend sync via HTTP endpoints.</div>
+    <div class="line"></div>
+    <div class="line"><span class="highlight">Kare4Kids</span> - Adoption Management Platform</div>
+    <div class="achievement">Built role-based adoption management platform using Flutter and Firebase, streamlining workflows for Social Workers and Management.</div>
+    <div class="achievement">Integrated multi-level authentication and real-time data handling with Firebase Authentication and Firestore to enhance security and user experience.</div>
+</div>
+`;
+            },
+            
+            awards: () => {
+                return `
+<div class="section-title">AWARDS & HONOURS</div>
+<div class="output">
+    <div class="line"></div>
+    <div class="line"><span style="color: #ffff00;">🏆 WINNER</span> | <span class="highlight">CWS NGO Hackathon 2025</span></div>
+    <div class="achievement">Built Gen AI chatbot in 24 hours with WhatsApp & IVR to deliver legal guidance on wildlife laws in India.</div>
+    <div class="line"></div>
+    <div class="line"><span style="color: #ffff00;">🥈 1ST RUNNER UP</span> | <span class="highlight">NetApp Innovathon 2023</span></div>
+    <div class="achievement">Redesigned donated clothing into affordable, adaptive wear for individuals with special needs.</div>
+    <div class="line"></div>
+    <div class="line"><span style="color: #ffff00;">🎖️ TOP 4</span> | <span class="highlight">Morgan Stanley - Code to Give 2023</span></div>
+    <div class="achievement">Developed role-based adoption management platform for kids up for adoption, enabling seamless coordination between Social Workers and Management.</div>
+</div>
+`;
+            },
+            
+            skills: () => {
+                return `
+<div class="section-title">TECHNICAL SKILLS</div>
+<div class="output">
+    <div class="line"></div>
+    <div class="line"><span class="company">Languages & Frameworks:</span></div>
+    <div class="line">
+        <span class="skill-box">Java</span>
+        <span class="skill-box">Spring Boot</span>
+        <span class="skill-box">GoLang</span>
+        <span class="skill-box">Python</span>
+        <span class="skill-box">Flask</span>
+        <span class="skill-box">Flutter</span>
+    </div>
+    <div class="line"></div>
+    <div class="line"><span class="company">Databases & Tools:</span></div>
+    <div class="line">
+        <span class="skill-box">PostgreSQL</span>
+        <span class="skill-box">Firebase</span>
+        <span class="skill-box">Git</span>
+        <span class="skill-box">Kafka</span>
+    </div>
+    <div class="line"></div>
+    <div class="line"><span class="company">Core Competencies:</span></div>
+    <div class="line">
+        <span class="skill-box">Microservices Architecture</span>
+        <span class="skill-box">REST APIs</span>
+        <span class="skill-box">System Design</span>
+        <span class="skill-box">Distributed Systems</span>
+        <span class="skill-box">AI/ML Integration</span>
+    </div>
+</div>
+`;
+            },
+            
+            all: () => {
+                return commands.about() + commands.contact() + commands.education() + 
+                       commands.experience() + commands.projects() + commands.awards() + 
+                       commands.skills();
+            },
+            
+            clear: () => {
+                output.innerHTML = '';
+                return '';
+            },
+            
+            download: () => {
+                downloadResume();
+                return '<div class="success">Resume download initiated...</div>';
+            }
+        };
+
+        // Generate dynamic border based on screen width
+        function generateBorder(char = '═') {
+            const terminalWidth = output.clientWidth;
+            const charWidth = 9.6; // More accurate character width for Fira Code
+            const borderLength = Math.max(20, Math.floor((terminalWidth - 40) / charWidth) - 2);
+            return '╔' + char.repeat(borderLength) + '╗';
+        }
+
+        function generateBottomBorder(char = '═') {
+            const terminalWidth = output.clientWidth;
+            const charWidth = 9.6;
+            const borderLength = Math.max(20, Math.floor((terminalWidth - 40) / charWidth) - 2);
+            return '╚' + char.repeat(borderLength) + '╝';
+        }
+
+        // Type text with animation
+        async function typeText(text, elementId, speed = 20) {
+            const element = document.getElementById(elementId);
+            let i = 0;
+            return new Promise((resolve) => {
+                const interval = setInterval(() => {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
+
+        // Initialize with welcome message
+        async function init() {
+            output.innerHTML = `
+<div style="text-align: center; padding: 20px 0;">
+    <div id="name-text" style="font-size: 24px; font-weight: bold; color: #00ffff;"></div>
+    <div id="title-text" style="color: #ffff00; margin-top: 10px;"></div>
+</div>
+<div class="line"></div>
+<div class="line success" id="welcome-text"></div>
+<div class="line info" id="help-text"></div>
+<div class="line"></div>
+`;
+            
+            // Type out the welcome message with animation
+            await typeText('KANIKA RAHEJA', 'name-text', 50);
+            await typeText('Software Engineer | Full-Stack Developer | AI Enthusiast', 'title-text', 30);
+            await typeText('Welcome to my interactive terminal resume!', 'welcome-text', 30);
+            document.getElementById('help-text').innerHTML = 'Type <span class="command">help</span> to see available commands.';
+            
+            // Focus on input after animation
+            commandInput.focus();
+        }
+
+        // Redraw borders on window resize (removed since no borders now)
+        window.addEventListener('resize', () => {
+            // No borders to redraw
+        });
+
+        // Process command
+        function processCommand(cmd) {
+            const trimmedCmd = cmd.trim().toLowerCase();
+            
+            // Display the command
+            const commandLine = `<div class="line"><span class="prompt">root@resume:~#</span> <span class="command">${cmd}</span></div>`;
+            output.innerHTML += commandLine;
+            
+            // Handle aliases (Unix-style commands)
+            let response = '';
+            
+            // Parse cat and ls commands
+            if (trimmedCmd.startsWith('cat ')) {
+                const file = trimmedCmd.substring(4).trim();
+                if (file === 'about.txt' || file === 'about') {
+                    response = commands.about();
+                } else if (file === 'contact.txt' || file === 'contact') {
+                    response = commands.contact();
+                } else if (file === 'education.log' || file === 'education.txt' || file === 'education') {
+                    response = commands.education();
+                } else if (file === 'experience.log' || file === 'experience.txt' || file === 'experience') {
+                    response = commands.experience();
+                } else if (file === 'projects.txt' || file === 'projects' || file === 'projects.log') {
+                    response = commands.projects();
+                } else if (file === 'awards.txt' || file === 'awards' || file === 'awards.log') {
+                    response = commands.awards();
+                } else if (file === 'skills.txt' || file === 'skills' || file === 'skills.log') {
+                    response = commands.skills();
+                } else {
+                    response = `<div class="error">cat: ${file}: No such file or directory</div>`;
+                }
+            } else if (trimmedCmd.startsWith('ls ')) {
+                const dir = trimmedCmd.substring(3).trim();
+                if (dir === 'projects/' || dir === 'projects') {
+                    response = commands.projects();
+                } else if (dir === 'awards/' || dir === 'awards') {
+                    response = commands.awards();
+                } else if (dir === 'skills/' || dir === 'skills') {
+                    response = commands.skills();
+                } else if (dir === 'education/' || dir === 'education') {
+                    response = commands.education();
+                } else if (dir === 'experience/' || dir === 'experience') {
+                    response = commands.experience();
+                } else {
+                    response = `<div class="error">ls: cannot access '${dir}': No such file or directory</div>`;
+                }
+            } else if (trimmedCmd === '' || trimmedCmd === 'ls' || trimmedCmd === 'ls -la' || trimmedCmd === 'ls -l') {
+                response = commands.help();
+            } else if (trimmedCmd === 'contact' || trimmedCmd === 'whoami') {
+                response = commands.contact();
+            } else if (trimmedCmd === 'education') {
+                response = commands.education();
+            } else if (trimmedCmd === 'experience') {
+                response = commands.experience();
+            } else if (trimmedCmd === 'projects') {
+                response = commands.projects();
+            } else if (trimmedCmd === 'awards') {
+                response = commands.awards();
+            } else if (trimmedCmd === 'skills' || trimmedCmd === './list_skills.sh') {
+                response = commands.skills();
+            } else if (trimmedCmd === 'about') {
+                response = commands.about();
+            } else if (commands[trimmedCmd]) {
+                response = commands[trimmedCmd]();
+            } else {
+                response = `<div class="error">Command not found: ${cmd}</div><div class="info">Type <span class="command">help</span> to see available commands.</div>`;
+            }
+            
+            if (trimmedCmd !== 'clear') {
+                output.innerHTML += `<div class="fade-in">${response}</div>`;
+            }
+            
+            // Scroll to bottom
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Download resume function
+        function downloadResume() {
+            const resumeText = `
+KANIKA RAHEJA
+Software Engineer | Full-Stack Developer | AI Enthusiast
+================================================================================
+
+CONTACT INFORMATION
+Email: raheja160kanika@gmail.com
+Phone: +91 9315143634
+LinkedIn: linkedin.com/in/KanikaRaheja
+GitHub: github.com/KanikaRaheja
+
+EDUCATION
+Master of Computer Applications (MCA)
+Indira Gandhi Delhi Technical University for Women (IGDTUW)
+2022 - 2024 | GPA: 8.2/10.0
+
+Bachelor of Science in Computer Science (Honours)
+University of Delhi
+2019 - 2022 | GPA: 8.9/10.0
+
+PROFESSIONAL EXPERIENCE
+SOFTWARE ENGINEER | Cisco
+Aug 2024 - Present | Bengaluru, Karnataka
+- Resilience: Enhanced system health monitoring and API reliability across 1000+ distributed microservice instances
+- Scalability: Designed and implemented scalable standalone tool in GoLang improving testing efficiency by 60%
+- High Availability: Improved critical high-availability challenges at scale for geolocation feature
+
+SOFTWARE ENGINEER INTERN | Cisco
+Jan 2024 - Aug 2024 | Bengaluru, Karnataka
+- Infrastructure: Designed and delivered interactive analytics dashboards
+- Tooling: Engineered internal management tool integrating REST APIs
+
+PROJECTS
+GemInbox - AI-Powered Email Assistant
+- Full-stack AI-powered email assistant with Java REST API and Chrome Extension
+- Intelligent email reply generation with Google Gemini
+
+Kare4Kids - Adoption Management Platform
+- Role-based platform using Flutter and Firebase
+- Multi-level authentication and real-time data handling
+
+AWARDS & HONOURS
+🏆 WINNER - CWS NGO Hackathon 2025
+🥈 1ST RUNNER UP - NetApp Innovathon 2023
+🎖️ TOP 4 - Morgan Stanley Code to Give 2023
+
+TECHNICAL SKILLS
+Languages & Frameworks: Java, Spring Boot, GoLang, Python, Flask, Flutter
+Databases & Tools: PostgreSQL, Firebase, Git, Kafka
+Core Competencies: Microservices, REST APIs, System Design, Distributed Systems, AI/ML
+            `;
+            
+            const blob = new Blob([resumeText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Kanika_Raheja_Resume.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Handle input
+        commandInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = commandInput.value;
+                if (cmd.trim()) {
+                    commandHistory.push(cmd);
+                    historyIndex = commandHistory.length;
+                    processCommand(cmd);
+                }
+                commandInput.value = '';
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    commandInput.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    commandInput.value = commandHistory[historyIndex];
+                } else {
+                    historyIndex = commandHistory.length;
+                    commandInput.value = '';
+                }
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                // Auto-complete functionality
+                const partial = commandInput.value.toLowerCase();
+                const availableCommands = Object.keys(commands);
+                const matches = availableCommands.filter(cmd => cmd.startsWith(partial));
+                if (matches.length === 1) {
+                    commandInput.value = matches[0];
+                }
+            }
+        });
+
+        // Keep focus on input
+        document.addEventListener('click', () => {
+            commandInput.focus();
+        });
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
